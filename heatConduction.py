@@ -36,16 +36,13 @@ def assemble(para, cache):
     """
     
     dt = para['deltaTime']
-    length = para['length']
     numberOfNode = para['numberOfNode']
     
-    alpha = para['conductivity'] / (para['density'] * para['heatCapacity'])
-    dx = length / (numberOfNode -1)
+    diffusivity = para['conductivity'] / (para['density'] * para['heatCapacity'])
+    dx = para['length'] / (numberOfNode -1)
     
     # boundary conditions
-    typeX0 = para['x=0 type']
     valueX0 = para['x=0 value']
-    typeXL = para['x=L type']
     valueXL = para['x=L value']
     
     # Containers
@@ -53,25 +50,25 @@ def assemble(para, cache):
     F = cache['F']; Jacobian = cache['Jacobian']
     
     # Calculate analytic jacobian element
-    temp1 = 1 + 2 * alpha * dt / (dx**2)
-    temp2 = - alpha * dt / (dx**2)
+    temp1 = 1 + 2 * diffusivity * dt / (dx**2)
+    temp2 = - diffusivity * dt / (dx**2)
     
     # Loop over grid
     for i in range(0, numberOfNode):
         # boundary condition node at x=0
         if i == 0:
-            if typeX0 == 'heatFlux':
+            if para['x=0 type'] == 'heatFlux':
                 Ug1 = utility.fixedGradient(valueX0, para['conductivity'], dx, T[1])
                 Jacobian[0][1] = temp2 * 2
-            elif typeX0 == 'fixedTemperature':
+            elif para['x=0 type'] == 'fixedTemperature':
                 Ug1 = utility.fixedValue(valueX0, T[1])
                 Jacobian[0][1] = 0
         # boundary condition node at x=L
         elif i == numberOfNode-1:
-            if typeXL == 'heatFlux':
+            if para['x=L type'] == 'heatFlux':
                 Ug2 = utility.fixedGradient(valueXL, para['conductivity'], dx, T[-2])
                 Jacobian[-1][-2] = temp2 * 2
-            elif typeXL == 'fixedTemperature':
+            elif para['x=L type'] == 'fixedTemperature':
                 Ug2 = utility.fixedValue(valueXL, T[-2])
                 Jacobian[-1][-2] = 0
         # Interior nodes
@@ -82,7 +79,7 @@ def assemble(para, cache):
     
     # Calculate F (right hand side vector)
     d2T = utility.secondOrder(T, dx, Ug1, Ug2)
-    F = T - T0 - alpha * dt * d2T # Vectorization
+    F = T - T0 - diffusivity * dt * d2T # Vectorization
     
     # Store in cache
     cache['F'] = -F; cache['Jacobian'] = Jacobian
@@ -208,7 +205,7 @@ def solve(para):
     start = time.time()
     cache = initialize(para)
     numOfTimeStep = para['numberOfTimeStep']
-    print(' [Step] [Pysical Time] [Iteration] [Residue]')
+    print(' [Step] [Physical Time] [Iteration] [Residue]')
     for timeStep in range(1, numOfTimeStep+1):
         cache['ts'] = timeStep
         cache = newtonIteration(para, cache)
