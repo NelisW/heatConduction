@@ -3,6 +3,12 @@
 Created on Tue Aug  6 10:49:25 2019
 
 @author: RickFu
+https://github.com/rickfu415/heatConduction
+https://github.com/NelisW/heatConduction
+
+see also Amar2006:
+https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
+
 """
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
@@ -52,8 +58,8 @@ def calT(para, x, t):
     For details about the analytic solution, please read 
     Section 8.1.2, Eqs 8.9
     """
-    
-    T0 = para['IC value']
+
+    T0 = para['Initial value']
     qDotX0 = para['x=0 value']
     k = para['conductivity']
     length = para['length']
@@ -73,10 +79,10 @@ def solve(para):
     
     Return: Numpy array containing temperature profile
     """
-    
+
     numOfTimeStep = para['numberOfTimeStep']
     numberOfNode = para['numberOfNode']
-    Tic = para['IC value']
+    Tic = para['Initial value']
     deltaTime = para['deltaTime']
     length = para['length']
     dx = length / numberOfNode

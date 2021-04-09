@@ -2,7 +2,13 @@
 """
 Created on Wed Jul 31 12:15:28 2019
 
-@author: RickFu
+@author: RickFu 
+https://github.com/rickfu415/heatConduction
+https://github.com/NelisW/heatConduction
+
+see also Amar2006:
+https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
+
 """
 import numpy as np
 import pandas as pd
@@ -15,13 +21,13 @@ def assemble(para, cache):
     """ Assemble linear system Jacobian * dx = F
     
     Process:
-        0. Obtain relevant informations
+        0. Obtain relevant information
         1. Loop over grid:
-            1.1 Deal with BC node at x=0
-            1.2 Deal with BC node at x=L
+            1.1 Deal with boundary condition node at x=0
+            1.2 Deal with boundary condition node at x=L
             1.3 Deal with interior nodes
             1.4 Obtain values on imaginary nodes (Ug1 and Ug2)
-                for two BCs
+                for the two boundary conditions
             1.4 Assemble Jacobian (a diagonal matrix)
         2. Calculate temperature gradient dT2
         3. Assemble F
@@ -29,17 +35,14 @@ def assemble(para, cache):
     Return: dictionary containing cache data
     """
     
-    k = para['conductivity']
-    rho = para['density']
-    hcp = para['heatCapacity']
     dt = para['deltaTime']
     length = para['length']
     numberOfNode = para['numberOfNode']
     
-    alpha = k / rho / hcp
+    alpha = para['conductivity'] / (para['density'] * para['heatCapacity'])
     dx = length / (numberOfNode -1)
     
-    # BC informations
+    # boundary conditions
     typeX0 = para['x=0 type']
     valueX0 = para['x=0 value']
     typeXL = para['x=L type']
@@ -55,18 +58,18 @@ def assemble(para, cache):
     
     # Loop over grid
     for i in range(0, numberOfNode):
-        # BC node at x=0
+        # boundary condition node at x=0
         if i == 0:
             if typeX0 == 'heatFlux':
-                Ug1 = utility.fixedGradient(valueX0, k, dx, T[1])
+                Ug1 = utility.fixedGradient(valueX0, para['conductivity'], dx, T[1])
                 Jacobian[0][1] = temp2 * 2
             elif typeX0 == 'fixedTemperature':
                 Ug1 = utility.fixedValue(valueX0, T[1])
                 Jacobian[0][1] = 0
-        # BC node at x=L
+        # boundary condition node at x=L
         elif i == numberOfNode-1:
             if typeXL == 'heatFlux':
-                Ug2 = utility.fixedGradient(valueXL, k, dx, T[-2])
+                Ug2 = utility.fixedGradient(valueXL, para['conductivity'], dx, T[-2])
                 Jacobian[-1][-2] = temp2 * 2
             elif typeXL == 'fixedTemperature':
                 Ug2 = utility.fixedValue(valueXL, T[-2])
@@ -100,7 +103,7 @@ def initialize(para):
     
     numberOfNode = para['numberOfNode']
     numOfTimeStep = para['numberOfTimeStep']
-    Tic = para['IC value']
+    Tic = para['Initial value']
     T = np.full((numberOfNode, 1), Tic)
     T0 = np.full((numberOfNode, 1), Tic)
     TProfile = np.zeros((numberOfNode, numOfTimeStep + 1))

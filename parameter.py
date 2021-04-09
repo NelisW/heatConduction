@@ -2,7 +2,13 @@
 """
 Created on Wed Jul 31 22:41:22 2019
 
-@author: RickFu
+@author: RickFu 
+https://github.com/rickfu415/heatConduction
+https://github.com/NelisW/heatConduction
+
+see also Amar2006:
+https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
+
 """
 import postprocessing as pp
 import heatConduction as hc
@@ -19,16 +25,7 @@ def main():
     """
     
     column = 'values'
-    df = pd.Series(name = column)
-    df = df.astype('object')
-    
-    # System-level 
-    df.at['problem'] = 'HeatConduction'
-    df.at['SpatialDiscretize'] = 'CenteredDifferencing'
-    df.at['TimeDiscretize'] = 'BackwardEular'
-    df.at['ODEsolver'] = 'NewtonIteration'
-    df.at['linearSolver'] = 'numpy linalg'
-    df.at['CPU'] = 1
+    df = pd.Series(name = column,dtype='object')
     
     # Material
     df.at['material'] = 'steel'
@@ -38,8 +35,8 @@ def main():
     df.at['heatCapacity'] = 434
     
     # Grid
-    df.at['length'] = 0.01
-    df.at['numberOfNode'] = 51
+    df.at['length'] = 0.05
+    df.at['numberOfNode'] = 501
     
     # Solution
     df.at['numberOfTimeStep'] = 50#400
@@ -49,13 +46,14 @@ def main():
     df.at['relaxation'] = 1 # value in [0-1] Very sensitive!!!
     
     # Initial conditions
-    df.at['IC value'] = 298.
+    df.at['Initial value'] = 298.
     
     # Boundary conditions
-    df.at['x=0 type'] = 'heatFlux'#'heatFlux' or 'fixedTemperature'
-    df.at['x=0 value'] = 750000
-    df.at['x=L type'] = 'heatFlux'#'heatFlux' or 'fixedTemperature'
+    df.at['x=0 type'] = 'heatFlux'#'heatFlux' W/m2  or 'fixedTemperature' K
+    df.at['x=0 value'] = 750000 
+    df.at['x=L type'] = 'heatFlux'#'heatFlux' W/m2  or 'fixedTemperature' K
     df.at['x=L value'] = 0.
+
     return df
 
 

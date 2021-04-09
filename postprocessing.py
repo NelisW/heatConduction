@@ -3,6 +3,12 @@
 Created on Wed Jul 31 23:07:48 2019
 
 @author: RickFu
+https://github.com/rickfu415/heatConduction
+https://github.com/NelisW/heatConduction
+
+see also Amar2006:
+https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
+
 """
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt

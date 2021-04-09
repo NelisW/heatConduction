@@ -2,7 +2,13 @@
 """
 Created on Wed Jul 31 12:01:18 2019
 
-@author: RickFu
+@author: RickFu 
+https://github.com/rickfu415/heatConduction
+https://github.com/NelisW/heatConduction
+
+see also Amar2006:
+https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
+
 """
 import numpy as np
 
@@ -10,7 +16,7 @@ import numpy as np
 def fixedValue(value, U2):
     """  Dirichlet boundary condition
 
-    Assume that value of variable at BC is fixed.
+    Assume that value of variable at boundary condition is fixed.
     Please see any numerical analysis text book for details.
     
     Return: float
@@ -24,7 +30,7 @@ def fixedValue(value, U2):
 def fixedGradient(q, k, dx, U1):
     """  Neumann boundary condition
     
-    Assume that the resulted gradient at BC is fixed.
+    Assume that the resulted gradient at boundary condition is fixed.
     Please see any numerical analysis text book for details.
     
     Return: float
@@ -41,7 +47,7 @@ def secondOrder(U, dx, Ug1, Ug2):
     Centered differencing approximation.
     D2U/Dx2 = (U[i-1] - 2U[i] + U[i+1])/dx**2
     
-    For BC nodes, use the values on ghost nodes.
+    For boundary condition nodes, use the values on ghost nodes.
     
     Ug1: value on ghost node at x=0
     Ug2: value on ghost node at x=L
