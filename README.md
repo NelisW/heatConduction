@@ -26,3 +26,15 @@ Added a Jupyter notebook as a demo case for the solver. Very straight forward an
 If you are using the code for your research or study, please consider cite me :) I am a miserable PhD ......
 1. [Thermomechanical Coupling for Charring Ablators](https://doi.org/10.2514/1.T5194).
 2. [Thermal Expansion for Charring Ablative Materials](https://doi.org/10.2514/1.T5718).
+
+
+## Updates 20210409 (CJW)
+
+1. Changed the files to allow temporal changes to boundary conditions
+
+1. Added the option to do radiative heat loss on surface at x=0.
+
+2. Changed the notebook to do more examples, also of temporal changes.
+
+3. Many other minor updates.
+

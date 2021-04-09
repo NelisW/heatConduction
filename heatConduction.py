@@ -12,13 +12,46 @@ https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
 """
 import numpy as np
 import pandas as pd
+# import cupy as np
 import parameter
 import utility
 import time
 
+##########################################################################
+def initialize(para):
+    """ Initialize key data
 
+    done only once at the start of solve
+    
+    T: current step temperature
+    T0: last step temperature
+    TProfile: temperature results in time and space
+    F: B as right hand side of Ax = B
+    Jacobian: A as left had side of Ax = B
+    
+    Return: a dictionary
+    """
+    
+    numberOfNode = int(para['numberOfNode'])
+    numOfTimeStep = int(para['numberOfTimeStep'])
+    Tic = para['Initial value']
+    T = np.full((numberOfNode, 1), Tic)
+    T0 = np.full((numberOfNode, 1), Tic)
+    TProfile = np.zeros((numberOfNode, numOfTimeStep + 1))
+    F = np.zeros((numberOfNode, 1))
+    Jacobian = np.zeros((numberOfNode, numberOfNode))
+    TProfile[:,0] = T.reshape(1,-1)
+    cache = {'T':T,'T0':T0,'TProfile':TProfile,
+             'F':F,'Jacobian':Jacobian,
+             'Log':pd.DataFrame()}
+    return cache
+
+
+#######################################################################
 def assemble(para, cache):
     """ Assemble linear system Jacobian * dx = F
+
+    Done in each iteration in newton solver
     
     Process:
         0. Obtain relevant information
@@ -36,22 +69,30 @@ def assemble(para, cache):
     """
     
     dt = para['deltaTime']
-    numberOfNode = para['numberOfNode']
+    numberOfNode = int(para['numberOfNode'])
+    timeStep = cache['ts']
+    currentTime = (cache['ts'] - 1) * dt
     
-    diffusivity = para['conductivity'] / (para['density'] * para['heatCapacity'])
     dx = para['length'] / (numberOfNode -1)
     
     # boundary conditions
-    valueX0 = para['x=0 value']
-    valueXL = para['x=L value']
-    
+    if para['Do radiative']:
+        radLoss = para['Emissivity'] * 5.67e-8 * cache['T'][0] ** 4
+    else:
+        radLoss = 0
+
+    valueX0 = para['x=0 value'][timeStep-1] - radLoss
+    valueXL = para['x=L value'][timeStep-1]
+
     # Containers
-    T = cache['T']; T0 = cache['T0']
-    F = cache['F']; Jacobian = cache['Jacobian']
+    T = cache['T']
+    T0 = cache['T0']
+    F = cache['F']
+    Jacobian = cache['Jacobian']
     
     # Calculate analytic jacobian element
-    temp1 = 1 + 2 * diffusivity * dt / (dx**2)
-    temp2 = - diffusivity * dt / (dx**2)
+    temp1 = 1 + 2 * para['diffusivity']  * dt / (dx**2)
+    temp2 = - para['diffusivity']  * dt / (dx**2)
     
     # Loop over grid
     for i in range(0, numberOfNode):
@@ -79,39 +120,13 @@ def assemble(para, cache):
     
     # Calculate F (right hand side vector)
     d2T = utility.secondOrder(T, dx, Ug1, Ug2)
-    F = T - T0 - diffusivity * dt * d2T # Vectorization
+    F = T - T0 - para['diffusivity']  * dt * d2T # Vectorization
     
     # Store in cache
-    cache['F'] = -F; cache['Jacobian'] = Jacobian
+    cache['F'] = -F
+    cache['Jacobian'] = Jacobian
+
     return cache
-
-
-def initialize(para):
-    """ Initialize key data
-    
-    T: current step temperature
-    T0: last step temperature
-    TProfile: temperature results in time and space
-    F: B as right hand side of Ax = B
-    Jacobian: A as left had side of Ax = B
-    
-    Return: a dictionary
-    """
-    
-    numberOfNode = para['numberOfNode']
-    numOfTimeStep = para['numberOfTimeStep']
-    Tic = para['Initial value']
-    T = np.full((numberOfNode, 1), Tic)
-    T0 = np.full((numberOfNode, 1), Tic)
-    TProfile = np.zeros((numberOfNode, numOfTimeStep + 1))
-    F = np.zeros((numberOfNode, 1))
-    Jacobian = np.zeros((numberOfNode, numberOfNode))
-    TProfile[:,0] = T.reshape(1,-1)
-    cache = {'T':T,'T0':T0,'TProfile':TProfile,
-             'F':F,'Jacobian':Jacobian,
-             'Log':pd.DataFrame()}
-    return cache
-
 
 def solveLinearSystem(para, cache):
     """ Solve Ax=B
@@ -164,7 +179,7 @@ def newtonIteration(para, cache):
     
     """
     
-    maxIteration = para['maxIteration']
+    maxIteration = int(para['maxIteration'])
     convergence = para['convergence']
     dt = para['deltaTime']
     log = cache['Log']
@@ -179,10 +194,13 @@ def newtonIteration(para, cache):
             log.loc[ts,'Residual'] = norm
             break
         cache = solveLinearSystem(para, cache)
-    print(' [','{:3.0f}'.format(ts), ']',
-          ' [','{:6.2f}'.format(ts*dt),']',
-          ' [','{:2.0f}'.format(n+1), ']',
-          ' [','{:8.2E}'.format(norm),']')
+
+    if para['showProg']:
+        print(' [','{:3.0f}'.format(ts), ']',
+            ' [','{:6.2f}'.format(ts*dt),']',
+            ' [','{:2.0f}'.format(n+1), ']',
+            ' [','{:8.2E}'.format(norm),']')
+
     return cache
 
 
@@ -201,18 +219,21 @@ def solve(para):
     Return: temperature profile as final result
     """
     
-    print(" Heat Conduction Solver")
+    if para['showProg']:
+        print(" Heat Conduction Solver")
     start = time.time()
     cache = initialize(para)
-    numOfTimeStep = para['numberOfTimeStep']
-    print(' [Step] [Physical Time] [Iteration] [Residue]')
+    numOfTimeStep = int(para['numberOfTimeStep'])
+    if para['showProg']:
+        print(' [Step] [Physical Time] [Iteration] [Residue]')
     for timeStep in range(1, numOfTimeStep+1):
         cache['ts'] = timeStep
         cache = newtonIteration(para, cache)
         cache = storeUpdateResult(cache)
     TProfile = cache['TProfile']
     runtime = time.time() - start
-    print('[Cost] CPU time spent','%.3f'%runtime,'s')
+    if para['showProg']:
+        print('[Cost] CPU time spent','%.3f'%runtime,'s')
     return TProfile, cache
 
 

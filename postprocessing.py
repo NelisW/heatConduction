@@ -14,6 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
+# import cupy as np
 import pandas as pd
 
 
@@ -100,8 +101,8 @@ def preprocess(parameter, results):
     """
     
     length = parameter['length']
-    numberOfNode = parameter['numberOfNode']
-    numOfTimeStep = parameter['numberOfTimeStep']
+    numberOfNode = int(parameter['numberOfNode'])
+    numOfTimeStep = int(parameter['numberOfTimeStep'])
     deltaTime = parameter['deltaTime']
     time = deltaTime * numOfTimeStep
     grids = np.linspace(0, length, numberOfNode).round(5)

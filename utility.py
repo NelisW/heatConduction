@@ -11,6 +11,7 @@ https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
 
 """
 import numpy as np
+# import cupy as np
 
 
 def fixedValue(value, U2):
