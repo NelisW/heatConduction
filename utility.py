@@ -10,8 +10,12 @@ see also Amar2006:
 https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
 
 """
+
+# try:
+#     import cupy as np                    
+# except ImportError:
 import numpy as np
-# import cupy as np
+
 
 
 def fixedValue(value, U2):

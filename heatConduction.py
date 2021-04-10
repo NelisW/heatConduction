@@ -10,9 +10,14 @@ see also Amar2006:
 https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
 
 """
+
+# try:
+#     import cupy as np                    
+# except ImportError:
 import numpy as np
+
 import pandas as pd
-# import cupy as np
+
 import parameter
 import utility
 import time
@@ -40,7 +45,7 @@ def initialize(para):
     TProfile = np.zeros((numberOfNode, numOfTimeStep + 1))
     F = np.zeros((numberOfNode, 1))
     Jacobian = np.zeros((numberOfNode, numberOfNode))
-    TProfile[:,0] = T.reshape(1,-1)
+    TProfile[:,0] = T.reshape(-1,)
     cache = {'T':T,'T0':T0,'TProfile':TProfile,
              'F':F,'Jacobian':Jacobian,
              'Log':pd.DataFrame()}
@@ -78,10 +83,12 @@ def assemble(para, cache):
     # boundary conditions
     if para['Do radiative']:
         radLoss = para['Emissivity'] * 5.67e-8 * cache['T'][0] ** 4
+        atmoGain = (1 - para['AtmoTau']) * 5.67e-8 * cache['T'][0] ** 4
     else:
         radLoss = 0
+        atmoGain = 0
 
-    valueX0 = para['x=0 value'][timeStep-1] - radLoss
+    valueX0 = para['x=0 value'][timeStep-1] - radLoss + atmoGain
     valueXL = para['x=L value'][timeStep-1]
 
     # Containers
@@ -162,7 +169,7 @@ def storeUpdateResult(cache):
     TProfile = cache['TProfile']
     T = cache['T']
     cache['T0'] = T.copy()
-    TProfile[:,timeStep] = T.reshape(1,-1)
+    TProfile[:,timeStep] = T.reshape(-1,)
     return cache
 
 
