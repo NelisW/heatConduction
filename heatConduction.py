@@ -8,6 +8,7 @@ https://github.com/NelisW/heatConduction
 
 see also Amar2006:
 https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
+http://web.engr.uky.edu/~acfd/egr537-lctrs.pdf
 
 """
 
@@ -161,7 +162,7 @@ def solveLinearSystem(para, cache):
 def storeUpdateResult(cache):
     """ Store results
     Update T0
-    Store temperaure results into a dataframe and 
+    Store temperature results into a dataframe and 
     save it in the cache.
     """
     

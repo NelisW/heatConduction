@@ -11,7 +11,7 @@ Added a Jupyter notebook as a demo case for the solver. Very straight forward an
     3. Using Newton's method to solve discretized equation system at each time step.  
     4. Two types of boundary conditions, fixed temperature and fixed heat flux.  
     5. Current version only support constant material properties, will be upgraded.  
-    6. Incoporate with postprocessing module and analytic solution comparison.   
+    6. Incorporate with postprocessing module and analytic solution comparison.   
 
 ## How to run:  
     0. Clone the repository.  

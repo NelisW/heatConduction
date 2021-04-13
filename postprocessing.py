@@ -8,6 +8,7 @@ https://github.com/NelisW/heatConduction
 
 see also Amar2006:
 https://repository.lib.ncsu.edu/bitstream/handle/1840.16/2847/etd.pdf
+http://web.engr.uky.edu/~acfd/egr537-lctrs.pdf
 
 """
 from mpl_toolkits.mplot3d import Axes3D
@@ -85,8 +86,6 @@ def temperatureDistribution(results, times):
     ax.set_xlabel("x, m")
     ax.set_ylabel("Temperature, K")
 
-
-
 def preprocess(parameter, results):
     """ Pre-Process results
     
@@ -113,6 +112,49 @@ def preprocess(parameter, results):
                       index = grids, 
                       columns = times)
     return df
+
+
+def plotsummary(results, positions,deciX=1,deciY=1,title='',savefile=None):
+    """ Plot results 
+
+    Inputs:
+        1. results, a pandas DataFrame
+        2. Positions, a list of depth positions
+        3. use every deciX sample along depth
+        4. use every deciY sample along time
+        5. title for the plots
+        6. save file name
+        
+    """
+    import pyradi.ryplot as ryplot
+    from matplotlib import cm
+    
+    df = results.loc[positions,:]
+    
+    Z = results.T.values
+
+    Z = Z[:-1:deciY,:-1:deciX]
+    Xv = np.asarray(results.index[0:-1:deciX])
+    Yv = np.asarray(results.columns[0:-1:deciY])
+    X, Y = np.meshgrid(Xv, Yv)
+    samples = df.values[:,0:-1:deciY]
+
+    p = ryplot.Plotter(1,1,1,figsize=(10,16),doWarning=False)
+    p.mesh3D(1,X,Y,Z,title,'Depth m','Time s','Temperature K',xInvert=True,yInvert=True,cmap=cm.seismic)
+    if savefile is not None:
+        fname = savefile.replace('.','-3D.')
+        p.saveFig(f'{fname}')
+    
+    miny = np.min(samples)
+    maxy = np.max(samples)
+    q = ryplot.Plotter(2,1,1,figsize=(10,6),doWarning=False)
+    for ix,(index, row) in enumerate(df.iterrows()):
+        q.plot(1,Yv,samples[ix,:],title,'Time s','Temperature K',
+               pltaxis=[0,np.max(Yv),miny,maxy],label=[f'depth={positions[ix]:0.2f} m'])
+    if savefile is not None:
+        fname = savefile.replace('.','-T.')
+        q.saveFig(f'{fname}')
+
 
 
 
