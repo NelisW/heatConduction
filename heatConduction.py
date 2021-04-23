@@ -53,6 +53,32 @@ def initialize(para):
     return cache
 
 
+###############################################################
+def convectionCoeff(dT, vwind=0, orient='Horizontal',charSize=1):
+    """Convective heat coefficient  W/(m2.K)
+    
+    dT in kelvin/celsius
+    vwind wind speed in m/s
+    orient orientation ['Horizontal','Vertical']
+    charSize characteristic size/length in m
+    
+    Convective heat coefficient W/(m2.K)    
+    """
+    
+    dicFC = {
+    'Horizontal' : [2.53,0.333,5.74,0.8,0.2],  
+    'Vertical' : [1.69,0.333,4.2,0.78,0.2],  
+    }
+    
+    if orient not in dicFC.keys():
+        print(f'{orient} is not available in funcion convectionLoss()')
+        return None
+    
+    hf = dicFC[orient][0] * (np.abs(dT)/charSize)**dicFC[orient][1]
+    hw = dicFC[orient][2] * vwind **dicFC[orient][3]/(charSize**dicFC[orient][4])
+
+    return np.where(hf>hw,hf,hw)
+
 #######################################################################
 def assemble(para, cache):
     """ Assemble linear system Jacobian * dx = F
@@ -84,12 +110,21 @@ def assemble(para, cache):
     # boundary conditions
     if para['Do radiative']:
         radLoss = para['Emissivity'] * 5.67e-8 * cache['T'][0] ** 4
-        atmoGain = (1 - para['AtmoTau']) * 5.67e-8 * cache['T'][0] ** 4
+        atmoGain = (1 - para['AtmoTau']) * 5.67e-8 *  para['TempTau'] ** 4
     else:
         radLoss = 0
         atmoGain = 0
 
-    valueX0 = para['x=0 value'][timeStep-1] - radLoss + atmoGain
+    if para['Do convection']:
+        convCoeff = convectionCoeff(cache['T'][0]-para['TempTau'], 
+                vwind=para['WindSpeed'], orient='Horizontal',charSize=para['ConvLCrit'])
+        convLoss = (cache['T'][0]-para['TempTau']) * convCoeff
+    else:
+        convLoss = 0
+
+
+
+    valueX0 = para['x=0 value'][timeStep-1] - radLoss + atmoGain - convLoss
     valueXL = para['x=L value'][timeStep-1]
 
     # Containers
