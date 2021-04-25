@@ -142,7 +142,7 @@ def plotsummary(results, positions,deciX=1,deciY=1,title='',savefile=None):
     p = ryplot.Plotter(1,1,1,figsize=(10,16),doWarning=False)
     p.mesh3D(1,X,Y,Z,title,'Depth m','Time s','Temperature K',xInvert=True,yInvert=True,cmap=cm.seismic)
     if savefile is not None:
-        fname = savefile.replace('.','-3D.')
+        fname = savefile.replace('.png','-3D.png')
         p.saveFig(f'{fname}')
     
     miny = np.min(samples)
@@ -152,7 +152,7 @@ def plotsummary(results, positions,deciX=1,deciY=1,title='',savefile=None):
         q.plot(1,Yv,samples[ix,:],title,'Time s','Temperature K',
                pltaxis=[0,np.max(Yv),miny,maxy],label=[f'depth={positions[ix]:0.2f} m'])
     if savefile is not None:
-        fname = savefile.replace('.','-T.')
+        fname = savefile.replace('.png','-T.png')
         q.saveFig(f'{fname}')
 
 
