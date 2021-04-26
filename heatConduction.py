@@ -110,15 +110,15 @@ def assemble(para, cache):
     # boundary conditions
     if para['Do radiative']:
         radLoss = para['Emissivity'] * 5.67e-8 * cache['T'][0] ** 4
-        atmoGain = (1 - para['AtmoTau']) * 5.67e-8 *  para['TempTau'] ** 4
+        atmoGain = (1 - para['AtmoTau']) * 5.67e-8 *  para['AtmoTemp'] ** 4
     else:
         radLoss = 0
         atmoGain = 0
 
     if para['Do convection']:
-        convCoeff = convectionCoeff(cache['T'][0]-para['TempTau'], 
+        convCoeff = convectionCoeff(cache['T'][0]-para['AtmoTemp'], 
                 vwind=para['WindSpeed'], orient='Horizontal',charSize=para['ConvLCrit'])
-        convLoss = (cache['T'][0]-para['TempTau']) * convCoeff
+        convLoss = (cache['T'][0]-para['AtmoTemp']) * convCoeff
     else:
         convLoss = 0
 
