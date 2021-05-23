@@ -136,11 +136,31 @@ def plotsummary(results, positions,deciX=1,deciY=1,title='',savefile=None):
     Z = Z[:-1:deciY,:-1:deciX]
     Xv = np.asarray(results.index[0:-1:deciX])
     Yv = np.asarray(results.columns[0:-1:deciY])
+
+    maxtime = np.max(Yv)
+    if maxtime > 50*24*60*60:
+        timeStr = 'Time Years'
+        Yv = Yv / (365.25*24*60*60)
+    elif maxtime > 20*24*60*60:
+        timeStr = 'Time Weeks'
+        Yv = Yv / (7*24*60*60)
+    elif maxtime > 3*24*60*60:
+        timeStr = 'Time Days'
+        Yv = Yv / (24*60*60)
+    elif maxtime > 3*60*60:
+        timeStr = 'Time Hours'
+        Yv = Yv / (60*60)
+    elif maxtime > 3*60:
+        timeStr = 'Time Minutes'
+        Yv = Yv / (60)
+    else :
+        timeStr = 'Time Seconds'
+
     X, Y = np.meshgrid(Xv, Yv)
     samples = df.values[:,0:-1:deciY]
 
     p = ryplot.Plotter(1,1,1,figsize=(10,16),doWarning=False)
-    p.mesh3D(1,X,Y,Z,title,'Depth m','Time s','Temperature K',xInvert=True,yInvert=True,cmap=cm.seismic)
+    p.mesh3D(1,X,Y,Z,title,'Depth m',timeStr,'Temperature K',xInvert=True,yInvert=True,cmap=cm.seismic)
     if savefile is not None:
         fname = savefile.replace('.png','-3D.png')
         p.saveFig(f'{fname}')
@@ -149,8 +169,8 @@ def plotsummary(results, positions,deciX=1,deciY=1,title='',savefile=None):
     maxy = np.max(samples)
     q = ryplot.Plotter(2,1,1,figsize=(10,6),doWarning=False)
     for ix,(index, row) in enumerate(df.iterrows()):
-        q.plot(1,Yv,samples[ix,:],title,'Time s','Temperature K',
-               pltaxis=[0,np.max(Yv),miny,maxy],label=[f'depth={positions[ix]:0.2f} m'])
+        q.plot(1,Yv,samples[ix,:],title,timeStr,'Temperature K',
+               pltaxis=[0,np.max(Yv),miny,maxy],label=[f'depth={positions[ix]:0.2f} m'],xAxisFmt='%.2f',maxNX=11)
     if savefile is not None:
         fname = savefile.replace('.png','-T.png')
         q.saveFig(f'{fname}')
